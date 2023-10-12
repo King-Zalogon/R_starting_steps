@@ -1,0 +1,284 @@
+---
+title: "Ejercicio 4"
+author: "Grupo 9 - Herrera Martinez, Barnatan, Linares, Rey del Castillo y Albornoz"
+date: "5 de octubre de 2023"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Desarrollo de los Ejercicios
+
+## **Ejercicio 1**
+
+Crear una versión resumida de un dataset de MTCARS donde, el nuevo dataset incluya, el nombre de los vehiculos, la cilindrada, los caballos de fuerza y el peso, y si el motor es en V o lineal.
+
+```{r}
+data(mtcars)
+
+resumen_mtcars <- subset(mtcars, select = c("cyl", "hp", "wt","vs" ))
+
+resumen_mtcars
+```
+
+## **Ejercicio 2**
+
+Volcar el dataset de MTCARS resumido en un nuevo archivo CSV. Tomar el archivo CSV y calcular para todos los vehiculos la relacion entre cilindrada y caballo de fuerza (HP/Cyl) y caballo de fuerza y peso (Wt/hp). Integrar esos datos con los anteriores y generar un nuevo CSV.
+
+```{r}
+write.csv(resumen_mtcars,"mtcars_resumido.csv")
+
+archivo <- read.csv("mtcars_resumido.csv")
+
+archivo['HP_Cil'] = round(archivo$hp / archivo$cyl,3)
+archivo['WT_HP'] = round(archivo$wt / archivo$hp,3)
+
+write.csv(archivo,"mtcars_ampliado.csv")
+
+archivo
+```
+
+## **Ejercicio 3**
+
+Usando el nuevo dataset, cuantos y qué vehiculos tienen una relacion de fuerza (hp) y cilindrada (cyl) superior a 23 (o lo que es lo mismo, cuantos tienen cada cilindro produciendo mas de 23 hp). Volcar esos nuevos datos en un nuevo CSV.
+
+```{r}
+Mayores_HP_Cil=subset(archivo,HP_Cil>23)
+
+Mayores_HP_Cil=Mayores_HP_Cil[order(Mayores_HP_Cil$HP_Cil,decreasing=TRUE),]
+
+write.csv(Mayores_HP_Cil,"Mayores_HP_Cil.csv")
+
+Mayores_HP_Cil
+```
+
+## **Ejercicio 4**
+
+Buscar en google los 10 partidos después de que se uniera Messi al Inter Miami. Registrar los oponentes, goles a favor, goles en contra, si se definio en penales, penales a favor, penales en contra. Crear un dataset con esa información. Volcarlo en un archivo CSV.
+
+[*Debut Messi*]{.underline}*:* Cruz Azul (1) vs. Inter Miami (2) - 21 de julio de 2023 ([Olé.com.ar](https://www.ole.com.ar/messi/lionel-messi-debut-inter-miami-vs-cruz-azul-partido-leagues-cup-2023-hora-juega-ver-partido-vivo-online_0_2TyO66ChAa.html))
+
+```{r}
+IM_despues_Messi <- data.frame(
+    Oponente=c("Cruz Azul", 
+               "Atlanta United", 
+               "Orlando City", 
+               "FC Dallas", 
+               "Charlotte FC", 
+               "Philadelphia", 
+               "Nashville SC", 
+               "Cincinnati", 
+               "New York RB", 
+               "Nashville SC"),
+    GF=c(2, 4, 3, 4, 4, 4, 1, 3, 2, 0),
+    GC=c(1, 0, 1, 4, 0, 1, 1, 3, 0, 0),
+    Def_P=c("No",'No','No',"Si",'No','No','Si','Si','No','No'),
+    PF=c('No Hubo','No Hubo','No Hubo',5,'No Hubo','No Hubo',10,5,'No hubo','No hubo'),
+    PC=c('No Hubo','No Hubo','No Hubo',3,'No Hubo','No Hubo',9,4,'No Hubo','No Hubo')
+)
+
+write.csv(IM_despues_Messi,"IM_despues_Messi.csv")
+
+IM_despues_Messi
+```
+
+## **Ejercicio 5**
+
+Buscar en google los 10 partidos antes de que se una Messi del Inter Miami. Registrar los oponentes, goles a favor, goles en contra, si se definio en penales, penales a favor, penales en contra. Crear un dataset con esa información. Volcarlo en un archivo CSV (hacer el CSV primero y leerlo del programa, si bien resuelve esto, no se considera valido para este ejercicio, pero pueden usarlo como control si lo creen necesario).
+
+```{r}
+IM_antes_Messi <- data.frame(
+    Oponente=c('Philadelphia Union',
+               'New England Revolution',
+               'Birmingham Legion FC',
+               'DC United',
+               'New York Red Bulls',
+               'CF Montreal',
+               'Nashville SC',
+               'Orlando City SC',
+               'Nashville SC',
+               "New England Revolution" ),
+    GF=c(1, 1, 1, 1, 0, 1, 2, 1, 2 ,2),
+    GC=c(4, 3, 0, 2, 1, 1, 1, 3, 2, 1),
+    Def_P=c("No",'No','No',"No",'No','No','No','No','No','No'),
+    PF=c('No Hubo','No Hubo','No Hubo','No Hubo','No Hubo','No Hubo','No Hubo','No Hubo','No Hubo','No Hubo'),
+    PC=c('No Hubo','No Hubo','No Hubo','No Hubo','No Hubo','No Hubo','No Hubo','No Hubo','No Hubo','No Hubo')
+)
+
+write.csv(IM_antes_Messi,"IM_antes_Messi.csv")
+
+IM_antes_Messi
+```
+
+## **Ejercicio 6**
+
+Usando los datos del ejercicio 4 y 5, comparar, la cantidad de partidos ganados antes de messi y después. calcular el total de goles a favor de cada set y compararlos. Comparar también los mínimos y los máximos. En cada comparación indicar el porcentaje en que el dato cambio.
+
+*Primero analizamos el resultado de los partidos previos.*
+
+```{r}
+IM_antes_Messi['Resultado'] = with(IM_antes_Messi, ifelse(GF > GC, 'Ganó', 'Perdió'))
+```
+
+*Sobreescribimos los empates.*
+
+```{r}
+for (i in (1:nrow(IM_antes_Messi))){
+    if (IM_antes_Messi$GF[i] == IM_antes_Messi$GC[i])  {
+        IM_antes_Messi$Resultado[i] ='Empató'
+    }
+}
+
+IM_antes_Messi
+```
+
+*Ahora vamos con el resultado de los partidos posteriores.*
+
+```{r}
+IM_despues_Messi['Resultado'] = with(IM_despues_Messi, ifelse(GF > GC, 'Ganó', 'Perdió'))
+```
+
+*Sobreescribimos los empates.*
+
+```{r}
+for (i in (1:nrow(IM_despues_Messi))){
+    if (IM_despues_Messi$GF[i] == IM_despues_Messi$GC[i])  {
+        IM_despues_Messi$Resultado[i] ='Empató'
+    }
+}
+
+IM_despues_Messi
+```
+
+*Calculamos la cantidad de partidos ganados tanto antes como despúes de Messi.*
+
+```{r}
+nGanados_pre = 0
+for (i in 1:nrow(IM_antes_Messi)){
+    if (IM_antes_Messi$Resultado[i]=='Ganó'){
+        nGanados_pre = nGanados_pre +1
+    }
+}
+
+nGanados_post = 0
+for (i in 1:nrow(IM_despues_Messi)){
+    if (IM_despues_Messi$Resultado[i]=='Ganó'){
+        nGanados_post = nGanados_post +1
+    }
+}
+```
+
+Partidos que el Inter Miami ganó **antes** de Messi: `r nGanados_pre`
+
+Partidos que el Inter Miami ganó **después** de Messi: `r nGanados_post`
+
+*Ahora calculamos el "Factor Messi" (Post / Pre) para cada categoría*
+
+```{r}
+f_messi_goles_a_favor = sum(IM_despues_Messi$GF) / sum(IM_antes_Messi$GF)
+
+f_messi_goles_en_contra = sum(IM_despues_Messi$GC) / sum(IM_antes_Messi$GC)
+
+f_messi_goles_min = 0 #Pues el minimo es cero en ambos, no puedo dividir por cero [en esta variable existe ademas un efecto piso]
+
+f_messi_goles_max = max(IM_despues_Messi$GC) / max(IM_antes_Messi$GC)
+```
+
+**Cociente Post / Pre:**
+
+Cant. goles a favor: `r round(f_messi_goles_a_favor,2)`
+
+Cant. goles en contra: `r round(f_messi_goles_en_contra,2)`
+
+Mín. de goles marcados: `r f_messi_goles_min`
+
+Máx. de goles marcados: `r f_messi_goles_max`
+
+Es decir que se espera un aumento en un factor de `r round(f_messi_goles_a_favor,2)` (`r round(f_messi_goles_a_favor,2)*100`%) en goles a favor y una disminucion de 1 - `r round(f_messi_goles_en_contra,2)` = `r 1-round(f_messi_goles_en_contra,2)` (`r (1-round(f_messi_goles_en_contra,2))*100`%) de los goles en contra.
+
+## **Ejercicio 7**
+
+Si Messi se uniera a LA Galaxy, en qué porcentaje hubiera impactado los ultimos cinco partidos. Indicar los oponentes, resultado real, goles a favor esperados y goles en contra esperados si messi hubiera jugado en ese equipo (esto se puede hacer matemáticamente de varias maneras, pero la mas directa es usando la variación porcentual que ya tenemos del inter miami y aplicarla en este caso, a nivel de programar, pensar bien cada paso, y que información necesito).
+
+Suponiendo que el efecto es de Messi solamente, habria que multiplicar los resultados observados por el Factor Messi en cada categoria.
+
+*Resultados LA Galaxy (últimos 5 partidos):* [www.espn.com.ar](https://www.espn.com.ar/futbol/equipo/resultados/_/id/187/usa.los_angeles)
+
+```{r}
+LA_Galaxy_sin_messi= data.frame (
+    Oponente = c("LAFC",
+                  "Minessotta Utd FC",
+                  "Austin FC",
+                  "Portland Timbers",
+                  "Seattle Sounders FC" ),
+    GF = c(2,4,3,3,1),
+    GC = c(4,3,3,3,2),
+    Def_Pe = c("No", 'No', 'No',"No", 'No'),
+    PF = c('No Hubo', 'No Hubo', 'No Hubo', 'No Hubo', 'No Hubo'),
+    PC = c('No Hubo', 'No Hubo', 'No Hubo', 'No Hubo', 'No Hubo')
+)
+
+
+LA_Galaxy_con_messi= data.frame (
+    Oponente = c("LAFC",
+                  "Minessotta Utd FC",
+                  "Austin FC",
+                  "Portland Timbers",
+                  "Seattle Sounders FC" ),
+    GF = c(2,4,3,3,1),
+    GC = c(4,3,3,3,2),
+    Def_Pe = c("No", 'No', 'No',"No", 'No'),
+    PF = c('No Hubo', 'No Hubo', 'No Hubo', 'No Hubo', 'No Hubo'),
+    PC = c('No Hubo', 'No Hubo', 'No Hubo', 'No Hubo', 'No Hubo')
+)
+```
+
+Actualizamos los goles a favor / en contra de LA Galaxy suponiendo que messi se hubiera unido.
+
+```{r}
+LA_Galaxy_con_messi$GF = round(LA_Galaxy_con_messi$GF * f_messi_goles_a_favor)
+
+LA_Galaxy_con_messi$GC = round(LA_Galaxy_con_messi$GC * f_messi_goles_en_contra)
+```
+
+*Ahora sí, observemos los resultados promedio:*
+
+Goles a favor sin Messi: `r mean(LA_Galaxy_sin_messi$GF)`
+
+Goles en contra sin Messi: `r mean(LA_Galaxy_sin_messi$GC)`
+
+Goles a favor con Messi: `r mean(LA_Galaxy_con_messi$GF)`
+
+Goles en contra con Messi: `r mean(LA_Galaxy_con_messi$GC)`
+
+En base a estos datos, podríamos esperar que con Messi, el desempeño del LA Galaxy mejore en promedio un `r round((mean(LA_Galaxy_con_messi$GF)/mean(LA_Galaxy_sin_messi$GF))*100,0)`% respecto de los goles a favor y que, por otro lado, los goles en contra disminuyan un `r round((mean(LA_Galaxy_con_messi$GC)/mean(LA_Galaxy_sin_messi$GC))*100,0)`%.
+
+## **Ejercicio 8**
+
+Si Messi jugara en el LA Galaxy, de los ultimos 5, ¿Cuál hubiera tenido mayor cantidad de goles? y ¿Cuál menor cantidad?
+
+Teniendo en cuenta que tenemos un Data Frame de los partidos del LA Galaxy al cual aplicamos el factor Messi, sólo debemos buscar el Máximo y el Mínimo dentro de los Goles a Favor.
+
+```{r}
+GF_min <- LA_Galaxy_con_messi$GF[1]
+GF_max <- LA_Galaxy_con_messi$GF[1]
+
+Oponente_min <-  LA_Galaxy_con_messi$Oponente[1]
+Oponente_max <-  LA_Galaxy_con_messi$Oponente[1]
+
+for(i in 2:nrow(LA_Galaxy_con_messi)) {
+    if (LA_Galaxy_con_messi$GF[i] < GF_min) {
+        GF_min <- LA_Galaxy_con_messi$GF[i]
+        Oponente_min <- LA_Galaxy_con_messi$Oponente[i]
+    }
+    
+    if (LA_Galaxy_con_messi$GF[i] > GF_max) {
+        GF_max <- LA_Galaxy_con_messi$GF[i]
+        Oponente_max <- LA_Galaxy_con_messi$Oponente[i]
+    }
+}
+```
+
+El partido con mayor cantidad de goles hubiera sido el que se disputó contra `r Oponente_max` (`r GF_max` goles). Por otro lado, el que habría tenido la menor cantidad de goles hubiera sido el que se jugó con `r Oponente_min` (`r GF_min` goles).
